@@ -1,6 +1,7 @@
 //should be put in Config file later, so far this course has not covered Config yet, so leave it as it is now
 const APIKey = "2c2f279536ab63741430ebeacb9bf072";
 var cityList = [];
+var uvColorCodes = ['green', 'yellow', 'orange', 'red', 'purple'];
 
 $( document ).ready(function() {
     navigator.geolocation.getCurrentPosition(success, error);
@@ -71,9 +72,10 @@ function currentWeather(city, lat, lon) {
     var ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(date);
     var mo = new Intl.DateTimeFormat('en', { month: 'numeric' }).format(date);
     var da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(date);
-    
-    var cityDiv = $("#cityNow").html(""); //clear out the div
+ 
     var cardDiv = $('<div>').attr("class", "card-body"); //only purpose is for Bootstrap card styling
+    $("#cityNow").html(cardDiv); //clear out the div
+    
     var h2 = $("<h2>").text(`${response.name} (${mo}/${da}/${ye})`);
     var iconid = response.weather[0].icon;
     var iconImg = `https://openweathermap.org/img/wn/${iconid}@2x.png`;
@@ -84,13 +86,41 @@ function currentWeather(city, lat, lon) {
     var p1 = $("<p>").text("Temperature: " + tempF.toFixed(2));
     var p2 = $("<p>").text("Humidity: " + response.main.humidity);
     var p3 = $("<p>").text("Wind Speed: " + response.wind.speed);
-
     cardDiv.append(h2).append(p1).append(p2).append(p3);
-    cityDiv.append(cardDiv);
+
+    var lat = response.coord.lat;
+    var lon = response.coord.lon;
+    console.log(response.coord);
+    //get UV Index from a different API call
+    var queryURL = `http://api.openweathermap.org/data/2.5/uvi?lat=${lat}&lon=${lon}&appid=${APIKey}`;
+    $.ajax({
+        url: queryURL,
+        method: "GET"
+    }).then(function(response) {
+        var uvIndex = response.value;
+        var p4 = $("<p>").text("UV Index: ");
+        var span = $('<span>').html(uvIndex).css({"color": "white", "padding": "4px"});
+        p4.append(span);
+        cardDiv.append(p4);
+
+        //set text color to white and background color based on Image file. E.g. <3 green
+        if (uvIndex < 3) {
+            span.css("background-color", uvColorCodes[0]);
+        } else if (uvIndex < 6) {
+            span.css("background-color", uvColorCodes[1]);
+        } else if (uvIndex < 8) {
+            span.css("background-color", uvColorCodes[2]);
+        } else if (uvIndex < 11) {
+            span.css("background-color", uvColorCodes[3]);
+        } else {
+            span.css("background-color", uvColorCodes[4]);
+        }
+       
+    });
+    
   });
 
 }
-
 
 //Helper functions
 /** success for getting geolocation: show weather status for user's current city */

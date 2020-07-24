@@ -9,6 +9,7 @@ During the page load, user can choose if they allow sharing current location:
 - if they choose to share the location, fully loaded page will show weather report for current city (current temp, humidity, UV idex and 5-day forcast). 
 - If not, fully loaded page will show the last searched city weather report
 - If no search history and no geolocation data, will show empty frame.
+
 User can put in City name in Search bar to find a certain city's weather report
 
 ### Deployed link

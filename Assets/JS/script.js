@@ -23,13 +23,14 @@ $( document ).ready(function() {
             cityList.push(cityName);
             localStorage.setItem("cityList", JSON.stringify(cityList));
             currentWeather(localStorage.getItem("lastCity"));
+            forecast5(localStorage.getItem("lastCity"));
             refreshHistory();
         }
         
     });    
 });
 
-/** */
+/** To refresh search history in sidebar */
 function refreshHistory() {
     $("#pastCity").html(""); //clear list 
     for (var i = 0; i < cityList.length; i++) {
@@ -42,6 +43,7 @@ function refreshHistory() {
         //add Eventlistener to aEl
         aEl.on('click', (event) => {
             currentWeather(event.target.textContent);
+            forecast5(event.target.textContent);
         });
     }
 
@@ -90,7 +92,7 @@ function currentWeather(city, lat, lon) {
 
     var lat = response.coord.lat;
     var lon = response.coord.lon;
-    console.log(response.coord);
+    // console.log(response.coord);
     //get UV Index from a different API call
     var queryURL = `http://api.openweathermap.org/data/2.5/uvi?lat=${lat}&lon=${lon}&appid=${APIKey}`;
     $.ajax({
@@ -122,21 +124,58 @@ function currentWeather(city, lat, lon) {
 
 }
 
-//Helper functions
+/** Function to get 5 days for case*/
+function forecast5(city, lat, lon) {
+    if (typeof lat !== 'undefined' && typeof lon !== 'undefined') {
+        var queryURL = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${APIKey}`;
+    } else if (city !== ""){ //input is city name, could have better validation besides empty string but for hw now, only check
+        var queryURL = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${APIKey}`;
+    } else {
+        return -1;
+    }
+    $.ajax({
+        url: queryURL,
+        method: "GET"
+    })
+    .then(function(response) {
+        $("#forcast5").html("");
+        for (var i = 0; i < response.list.length; i+= 8) {
+            var date = response.list[i].dt_txt;
+            date = date.split(" ")[0]; //get only the date part of timestamp, e.g.2017-01-31
+            var dList = date.split("-");
+            date = dList[1] + "/" + dList[2] + "/" + dList[0];
+            
+            var h5 = $("<h5>").text(date).attr("class", "card-title");
+            var iconid = response.list[i].weather[0].icon;
+            var iconImg = `https://openweathermap.org/img/wn/${iconid}@2x.png`;
+            var img = $("<img>").attr("src", iconImg).attr("alt", response.list[i].weather[0].main).css({"width":"40px", "height":"40px" }); //alter is the weather text
+                
+            var tempF = (response.list[i].main.temp - 273.15) * 1.80 + 32; // Convert the temp to fahrenheit
+            var p1 = $("<p>").text("Temp.: " + tempF.toFixed(2)).attr("class", "card-text");
+            var p2 = $("<p>").text("Humidity: " + response.list[i].main.humidity).attr("class", "card-text");
+
+            var cardEl = $("<div>").attr("class", "card card-block bg-primary text-white border p-3 .rounded-sm");
+            cardEl.append(h5).append(img).append(p1).append(p2);
+            $("#forcast5").append(cardEl);
+            }
+        });
+}
+
+//-------------Helper functions--------------------//
 /** success for getting geolocation: show weather status for user's current city */
 function success(position) {
     var lat  = position.coords.latitude;
     var lon = position.coords.longitude;
     
     currentWeather("", lat, lon);
+    forecast5("", lat, lon);
  }
 
- /** error fallback is to show the last searched city. If no search history, show default city */
+ /** error fallback is to show the last searched city. */
  function error() {
-    //fallback logic: if search history exists, get the data from last city; if not, get the default city Seattle
+    //fallback logic: if search history exists, get the data from last city
     if (localStorage.getItem("lastCity")) {
         currentWeather(localStorage.getItem("lastCity"));
-    } else {
-        currentWeather("Seattle"); //without any location input, Seattle is the default city
-    }
+        forecast5(localStorage.getItem("lastCity"));
+    } 
   }

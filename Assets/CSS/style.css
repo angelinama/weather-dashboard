@@ -1,5 +1,4 @@
 .my-container {
-    z-index: 100; /* Behind the navbar */
     padding: 64px 0 0; /* Height of navbar */
   }
 
@@ -53,6 +52,6 @@
   
   @media screen and (max-width: 767.98px) {
     .sidebar-sticky {
-        height: auto;
+        height: auto; /* make sure when side bar take whole width, user won't need to scroll a whole page length*/
     }
   }

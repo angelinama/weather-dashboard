@@ -35,7 +35,7 @@ function refreshHistory() {
     $("#pastCity").html(""); //clear list 
     for (var i = 0; i < cityList.length; i++) {
         var city = cityList[i];
-        var liEl = $("<li>").attr("class", "nav-item");
+        var liEl = $("<li>").attr("class", "nav-item bg-white list-group-item");
         var aEl = $("<a>").attr("href","#").attr("class", "nav-link").text(city);
         liEl.append(aEl);
         $("#pastCity").append(liEl);
@@ -92,7 +92,7 @@ function currentWeather(city, lat, lon) {
 
     var lat = response.coord.lat;
     var lon = response.coord.lon;
-    console.log(response.coord);
+
     //get UV Index from a different API call
     var queryURL = `https://api.openweathermap.org/data/2.5/uvi?lat=${lat}&lon=${lon}&appid=${APIKey}`;
     $.ajax({
@@ -138,6 +138,7 @@ function forecast5(city, lat, lon) {
         method: "GET"
     })
     .then(function(response) {
+        $("#forcastHeader").text("5-Day Forcast");
         $("#forcast5").html("");
         for (var i = 0; i < response.list.length; i+= 8) {
             var date = response.list[i].dt_txt;

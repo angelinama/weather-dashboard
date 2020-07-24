@@ -92,9 +92,9 @@ function currentWeather(city, lat, lon) {
 
     var lat = response.coord.lat;
     var lon = response.coord.lon;
-    // console.log(response.coord);
+    console.log(response.coord);
     //get UV Index from a different API call
-    var queryURL = `http://api.openweathermap.org/data/2.5/uvi?lat=${lat}&lon=${lon}&appid=${APIKey}`;
+    var queryURL = `https://api.openweathermap.org/data/2.5/uvi?lat=${lat}&lon=${lon}&appid=${APIKey}`;
     $.ajax({
         url: queryURL,
         method: "GET"

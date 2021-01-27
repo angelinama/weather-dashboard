@@ -50,12 +50,14 @@ $( document ).ready(function() {
         if (!cityName) {
             alert("please input a city name to search!");
         } else {
-            getSingleWeather(cityName);
             localStorage.setItem("lastCity", cityName);
             cityList.push(cityName);
             localStorage.setItem("cityList", JSON.stringify(cityList));
-            $("#cityInput").val(""); //clear search input
+
+            getSingleWeather(cityName);
+
             refreshHistory();
+            $("#cityInput").val(""); //clear search input
          }     
     }); 
    
@@ -121,6 +123,11 @@ function getSingleWeather(city, lat, lon) {
     .fail(function (error) {
         console.log(error);
         alert("City not found! Please check your input. Tips: please refer to Google for correct city name. e.g. Washington D.C.");
+        cityList = JSON.parse(localStorage.getItem("cityList"));
+        cityList.pop();
+        localStorage.setItem("cityList", JSON.stringify(cityList));
+        localStorage.setItem("lastCity", cityList[cityList.length - 1]);
+        refreshHistory();
     });
 }
 

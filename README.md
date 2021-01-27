@@ -16,5 +16,3 @@ User can put in City name in Search bar to find a certain city's weather report
 https://angelinama.github.io/weather-dashboard/
 
 
-### TODO
-Clean up the logic to wait all ajax call done and then process the response

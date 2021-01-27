@@ -89,7 +89,8 @@ function currentWeather(city, lat, lon) {
     } else if (city !== ""){ //input is city name, could have better validation besides empty string but for hw now, only check
         var queryURL = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${APIKey}`;
     } else {
-        return -1;
+        alert("invalid search! Please give a city name in search bar!");
+        return;
     }
     
     $.ajax({
@@ -99,13 +100,13 @@ function currentWeather(city, lat, lon) {
     .then(
         //.done() call back
         function(response) { 
-            //NoTE: A easier way to get current date would be from 5-day forcast but II want to use Date() for practice
+            //NoTE: A easier way to get current date would be from 5-day forcast but I want to use Date() for practice
             var date = new Date(response.dt * 1000);
             var ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(date);
             var mo = new Intl.DateTimeFormat('en', { month: 'numeric' }).format(date);
             var da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(date);
         
-            var cardDiv = $('<div>').attr("class", "card-body"); //only purpose is for Bootstrap card styling
+            var cardDiv = $('<div>').attr("class", "card-body"); 
             $("#cityNow").html(cardDiv); //clear out the div
             
             var h2 = $("<h2>").text(`${response.name} (${mo}/${da}/${ye})`);
@@ -135,7 +136,7 @@ function currentWeather(city, lat, lon) {
                 p4.append(span);
                 cardDiv.append(p4);
 
-                //set text color to white and background color based on Image file. E.g. <3 green
+                //set text color to white and background color based on Image file. Color codes refer to: https://en.wikipedia.org/wiki/Ultraviolet_index
                 if (uvIndex < 3) {
                     span.css("background-color", uvColorCodes[0]);
                 } else if (uvIndex < 6) {

@@ -23,7 +23,7 @@ GIVEN a weather dashboard with form inputs
 - if not,  users can choose to share the location, and if they allow location service, fully loaded page will show weather report for current city (current temp, humidity, UV idex and 5-day forcast). 
 - If no search history and no geolocation data, will show empty frame and give user an alert.
 
-User can put in City name in Search bar to find a certain city's weather report
+- User can put in City name in Search bar to find a certain city's weather report
 
 ### Deployed link
 https://angelinama.github.io/weather-dashboard/

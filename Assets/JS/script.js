@@ -13,7 +13,7 @@ function success(position) {
     forecast5("", lat, lon);
  }
 
- /** error fallback is to show the last searched city. */
+ /** error: give user alert */
  function error() {
      alert("fail to retrive location! If you want to use your corrent location, please refresh page and click \"allow\" for pop-up question");
   }

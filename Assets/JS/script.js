@@ -2,6 +2,7 @@
 const APIKey = "2c2f279536ab63741430ebeacb9bf072";
 var cityList = []; //saved search city
 var uvColorCodes = ['green', 'yellow', 'orange', 'red', 'purple'];
+var cityName, uvIndex;
 
 //-------------Helper functions--------------------//
 /** success for getting geolocation: show weather status for user's current city */
@@ -97,9 +98,6 @@ function getSingleWeather(city, lat, lon) {
         alert("invalid search! Please give a city name in search bar!");
         return;
     }
-
-    var cityName = city; //use this to pass cityName from first Ajax call response to the callback in second ajax call
-    var uvIndex;
 
     $.ajax({
         url: queryURL,

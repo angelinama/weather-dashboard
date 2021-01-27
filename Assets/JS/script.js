@@ -99,7 +99,8 @@ function getSingleWeather(city, lat, lon) {
     }
 
     var cityName = city; //use this to pass cityName from first Ajax call response to the callback in second ajax call
-    
+    var uvIndex;
+
     $.ajax({
         url: queryURL,
         method: "GET"
@@ -109,15 +110,27 @@ function getSingleWeather(city, lat, lon) {
         var lon = response.coord.lon;
         cityName = response.name;
         //get UV Index from a different API call
-        queryURL = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&appid=${APIKey}`;
+        //NOTE: OpenWeatherAPI has an issue with UV Index from oncall API, it appears that all the return value are 0, so I have to add this extra ajax call to get only UV Index
+        queryURL = `https://api.openweathermap.org/data/2.5/uvi?lat=${lat}&lon=${lon}&appid=${APIKey}`;
         return $.ajax({
             url: queryURL,
             method: "GET"
         });  
     })
+    .then(function(response){
+        var lat = response.lat;
+        var lon = response.lon;
+        uvIndex = response.value;
+        //get forcast from a diffrent API call
+        queryURL = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&appid=${APIKey}`;
+        return $.ajax({
+            url: queryURL,
+            method: "GET"
+        }); 
+    })
     .done(function(response) {
         //display current weather for searched city if ajax call succeeds
-        displayCurrent(cityName, response); 
+        displayCurrent(cityName, uvIndex, response); 
         displayForcast(response);
     })
     .fail(function (error) {
@@ -135,7 +148,7 @@ function getSingleWeather(city, lat, lon) {
  * input: 
  * [response] return value from openweather Onecall API for searched city
 */
-function displayCurrent(cityName, response) {
+function displayCurrent(cityName, uvIndex, response) {
     var date = new Date(response.current.dt * 1000);
     var ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(date);
     var mo = new Intl.DateTimeFormat('en', { month: 'numeric' }).format(date);
@@ -156,19 +169,9 @@ function displayCurrent(cityName, response) {
     var p3 = $("<p>").text("Wind Speed: " + response.current.wind_speed + " MPH");
     cardDiv.append(h2).append(p1).append(p2).append(p3);
 
-    var uvIndex = response.current.uvi;
     //NOTE: OpenWeatherAPI has an issue with UV Index from oncall API, it appears that all the return value are 0, so I have to add this extra ajax call to get only UV Index
-    console.log(response.current);
-
-    var lat = response.lat;
-    var lon = response.lon;
-    queryURL = `https://api.openweathermap.org/data/2.5/uvi?lat=${lat}&lon=${lon}&appid=${APIKey}`;
-    $.ajax({
-        url: queryURL,
-        method: "GET"})
-    .done(function(result){
-        uvIndex = result.value;
-        var p4 = $("<p>").text("UV Index: ");
+    // var uvIndex = response.current.uvi;
+    var p4 = $("<p>").text("UV Index: ");
     var span = $('<span>').html(uvIndex).css({"color": "white", "padding": "4px"});
     p4.append(span);
     cardDiv.append(p4);
@@ -184,11 +187,7 @@ function displayCurrent(cityName, response) {
     span.css("background-color", uvColorCodes[3]);
     } else {
         span.css("background-color", uvColorCodes[4]);
-    }  
-    })
-    .fail(function(error) {
-        console.log(error)
-    });
+    }     
 }
 
 /** Function to get 5 days forcast using response from Onecall API response*/

@@ -1,5 +1,5 @@
 # weather-dashboard
-<img width="1438" alt="1" src="https://user-images.githubusercontent.com/22566791/88439525-4ef02f80-cdc0-11ea-81a2-5283c74ff240.png">
+![image](https://user-images.githubusercontent.com/22566791/106036064-ab8f1880-6089-11eb-8a13-41c78527970a.png)
 
 ### User Story
 As a traveler, I want to see the weather outlook for multiple cities, so that I can plan a trip accordingly.

@@ -128,7 +128,7 @@ function getSingleWeather(city, lat, lon) {
     })
     .done(function(response) {
         //display current weather for searched city if ajax call succeeds
-        displayCurrent(cityName, uvIndex, response); 
+        displayCurrent(response); 
         displayForcast(response);
     })
     .fail(function (error) {
@@ -146,7 +146,7 @@ function getSingleWeather(city, lat, lon) {
  * input: 
  * [response] return value from openweather Onecall API for searched city
 */
-function displayCurrent(cityName, uvIndex, response) {
+function displayCurrent(response) {
     var date = new Date(response.current.dt * 1000);
     var ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(date);
     var mo = new Intl.DateTimeFormat('en', { month: 'numeric' }).format(date);

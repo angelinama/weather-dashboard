@@ -18,6 +18,7 @@ function success(position) {
      alert("fail to retrive location! If you want to use your corrent location, please refresh page and click \"allow\" for pop-up question");
   }
 
+//start of page  
 $( document ).ready(function() {  
     //get all the searched cities name stored in localStorage
     if (localStorage.getItem("cityList")) {
@@ -43,7 +44,14 @@ $( document ).ready(function() {
 
 /** Handler for user search in search bar */
 function getSingleCityWeather() {
-    //add eventlistener to search bar
+    //add ebventlistener to search input field if user use enter key instead of clicking search button
+    $('#cityInput').keypress(function(event) {
+        if (event.which == 13) {//enter key keycode is 13
+            $("#searchBtn").click();
+        }
+        
+    });
+    //add eventlistener to search button
     $("#searchBtn").on('click', () => {
         var cityName = $("#cityInput").val().trim();
         if (!cityName) {
@@ -54,6 +62,7 @@ function getSingleCityWeather() {
             localStorage.setItem("cityList", JSON.stringify(cityList));
             currentWeather(cityName);
             forecast5(cityName);
+            $("#cityInput").val(""); //clear search input
          }     
     }); 
 }
@@ -76,6 +85,54 @@ function refreshHistory() {
     }
 
 }
+
+/** display current weather for given city 
+ * input: 
+ * [response] return value from openweather Current Weather Data API for searched city
+ * [response1] return value from openweather UV Index API for searched city
+*/
+function displayCurrent(response, response1) {
+    //NoTE: A easier way to get current date would be from 5-day forcast but I want to use Date() for practice
+    var date = new Date(response.dt * 1000);
+    var ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(date);
+    var mo = new Intl.DateTimeFormat('en', { month: 'numeric' }).format(date);
+    var da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(date);
+
+    var cardDiv = $('<div>').attr("class", "card-body"); 
+    $("#cityNow").html(cardDiv); //clear out the div
+    
+    var h2 = $("<h2>").text(`${response.name} (${mo}/${da}/${ye})`);
+    var iconid = response.weather[0].icon;
+    var iconImg = `https://openweathermap.org/img/wn/${iconid}@2x.png`;
+    var img = $("<img>").attr("src", iconImg).attr("alt", response.weather[0].main); //alter is the weather text
+    h2.append(img);
+    
+    var tempF = (response.main.temp - 273.15) * 1.80 + 32; // Convert the temp to fahrenheit
+    var p1 = $("<p>").text("Temperature: " + tempF.toFixed(2));
+    var p2 = $("<p>").text("Humidity: " + response.main.humidity);
+    var p3 = $("<p>").text("Wind Speed: " + response.wind.speed);
+    cardDiv.append(h2).append(p1).append(p2).append(p3);
+
+    var uvIndex = response1.value;
+    var p4 = $("<p>").text("UV Index: ");
+    var span = $('<span>').html(uvIndex).css({"color": "white", "padding": "4px"});
+    p4.append(span);
+    cardDiv.append(p4);
+
+    //set text color to white and background color based on Image file. Color codes refer to: https://en.wikipedia.org/wiki/Ultraviolet_index
+    if (uvIndex < 3) {
+        span.css("background-color", uvColorCodes[0]);
+    } else if (uvIndex < 6) {
+        span.css("background-color", uvColorCodes[1]);
+    } else if (uvIndex < 8) {
+        span.css("background-color", uvColorCodes[2]);
+    } else if (uvIndex < 11) {
+    span.css("background-color", uvColorCodes[3]);
+    } else {
+        span.css("background-color", uvColorCodes[4]);
+    }  
+}
+
 /** Function to get current report for searched City 
  * input: 
  * [city]
@@ -97,71 +154,30 @@ function currentWeather(city, lat, lon) {
         url: queryURL,
         method: "GET"
     })
-    .then(
-        //.done() call back
-        function(response) { 
-            //NoTE: A easier way to get current date would be from 5-day forcast but I want to use Date() for practice
-            var date = new Date(response.dt * 1000);
-            var ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(date);
-            var mo = new Intl.DateTimeFormat('en', { month: 'numeric' }).format(date);
-            var da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(date);
-        
-            var cardDiv = $('<div>').attr("class", "card-body"); 
-            $("#cityNow").html(cardDiv); //clear out the div
-            
-            var h2 = $("<h2>").text(`${response.name} (${mo}/${da}/${ye})`);
-            var iconid = response.weather[0].icon;
-            var iconImg = `https://openweathermap.org/img/wn/${iconid}@2x.png`;
-            var img = $("<img>").attr("src", iconImg).attr("alt", response.weather[0].main); //alter is the weather text
-            h2.append(img);
-            
-            var tempF = (response.main.temp - 273.15) * 1.80 + 32; // Convert the temp to fahrenheit
-            var p1 = $("<p>").text("Temperature: " + tempF.toFixed(2));
-            var p2 = $("<p>").text("Humidity: " + response.main.humidity);
-            var p3 = $("<p>").text("Wind Speed: " + response.wind.speed);
-            cardDiv.append(h2).append(p1).append(p2).append(p3);
+    .done(function(response) { 
+        var lat = response.coord.lat;
+        var lon = response.coord.lon;
 
-            var lat = response.coord.lat;
-            var lon = response.coord.lon;
-
-            //get UV Index from a different API call
-            var queryURL = `https://api.openweathermap.org/data/2.5/uvi?lat=${lat}&lon=${lon}&appid=${APIKey}`;
-            $.ajax({
-                url: queryURL,
-                method: "GET"
-            }).then(function(response) {
-                var uvIndex = response.value;
-                var p4 = $("<p>").text("UV Index: ");
-                var span = $('<span>').html(uvIndex).css({"color": "white", "padding": "4px"});
-                p4.append(span);
-                cardDiv.append(p4);
-
-                //set text color to white and background color based on Image file. Color codes refer to: https://en.wikipedia.org/wiki/Ultraviolet_index
-                if (uvIndex < 3) {
-                    span.css("background-color", uvColorCodes[0]);
-                } else if (uvIndex < 6) {
-                    span.css("background-color", uvColorCodes[1]);
-                } else if (uvIndex < 8) {
-                    span.css("background-color", uvColorCodes[2]);
-                } else if (uvIndex < 11) {
-                    span.css("background-color", uvColorCodes[3]);
-                } else {
-                    span.css("background-color", uvColorCodes[4]);
-                }  
-            });  
-        }, 
-        //.fail() call back
-        function (error) {
+        //get UV Index from a different API call
+        queryURL = `https://api.openweathermap.org/data/2.5/uvi?lat=${lat}&lon=${lon}&appid=${APIKey}`;
+        $.ajax({
+            url: queryURL,
+            method: "GET"
+        }).done(function(response1) {
+            //display current weather for searched city if ajax call succeeds
+            displayCurrent(response, response1); 
+        }).fail(function(error) {
             console.log(error);
-            alert("City not found! Please check your input. Tips: please refer to Google for correct city name. e.g. Washington D.C.");
-            //correct lastCity and cityList in localStorage
-            cityList = JSON.parse(localStorage.getItem("cityList"));
-            cityList.pop();
-            localStorage.setItem("cityList", JSON.stringify(cityList));
-            localStorage.setItem("lastCity", cityList[cityList.length - 1]);
-        }
-        );
-
+        });  
+    }).fail(function (error) {
+         console.log(error);
+        alert("City not found! Please check your input. Tips: please refer to Google for correct city name. e.g. Washington D.C.");
+        //correct lastCity and cityList in localStorage
+        cityList = JSON.parse(localStorage.getItem("cityList"));
+        cityList.pop();
+        localStorage.setItem("cityList", JSON.stringify(cityList));
+        localStorage.setItem("lastCity", cityList[cityList.length - 1]);
+    });
 }
 
 /** Function to get 5 days for case*/

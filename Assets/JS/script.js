@@ -1,11 +1,25 @@
 //should be put in Config file later, so far this course has not covered Config yet, so leave it as it is now
 const APIKey = "2c2f279536ab63741430ebeacb9bf072";
-var cityList = [];
+var cityList = []; //saved search city
 var uvColorCodes = ['green', 'yellow', 'orange', 'red', 'purple'];
 
-$( document ).ready(function() {
-    navigator.geolocation.getCurrentPosition(success, error);
+//-------------Helper functions--------------------//
+/** success for getting geolocation: show weather status for user's current city */
+function success(position) {
+    var lat  = position.coords.latitude;
+    var lon = position.coords.longitude;
     
+    currentWeather("", lat, lon);
+    forecast5("", lat, lon);
+ }
+
+ /** error fallback is to show the last searched city. */
+ function error() {
+     alert("fail to retrive location! If you want to use your corrent location, please refresh page and click \"allow\" for pop-up question");
+  }
+
+$( document ).ready(function() {  
+    //get all the searched cities name stored in localStorage
     if (localStorage.getItem("cityList")) {
         cityList = JSON.parse(localStorage.getItem("cityList"));
     }
@@ -13,23 +27,38 @@ $( document ).ready(function() {
     //dynamically generate search history
     refreshHistory();
     
+    // display the last searched city 
+    if (localStorage.getItem("lastCity")) {
+        var lastCity = localStorage.getItem("lastCity");
+        currentWeather(lastCity);
+        forecast5(lastCity);
+    } else {// using current location if user allow location service
+        navigator.geolocation.getCurrentPosition(success, error);
+    }
+
+    // handle user search in search bar
+    getSingleCityWeather();
+   
+});
+
+/** Handler for user search in search bar */
+function getSingleCityWeather() {
     //add eventlistener to search bar
     $("#searchBtn").on('click', () => {
-        var cityName = $("#cityInput").val();
+        var cityName = $("#cityInput").val().trim();
         if (!cityName) {
             alert("please input a city name to search!");
         } else {
             localStorage.setItem("lastCity", cityName);
             cityList.push(cityName);
             localStorage.setItem("cityList", JSON.stringify(cityList));
-            currentWeather(localStorage.getItem("lastCity"));
-            forecast5(localStorage.getItem("lastCity"));
-        }
-        
-    });    
-});
+            currentWeather(cityName);
+            forecast5(cityName);
+         }     
+    }); 
+}
 
-/** To refresh search history in sidebar */
+/** To re-render search history in sidebar */
 function refreshHistory() {
     $("#pastCity").html(""); //clear list 
     for (var i = 0; i < cityList.length; i++) {
@@ -179,22 +208,3 @@ function forecast5(city, lat, lon) {
         }
         );
 }
-
-//-------------Helper functions--------------------//
-/** success for getting geolocation: show weather status for user's current city */
-function success(position) {
-    var lat  = position.coords.latitude;
-    var lon = position.coords.longitude;
-    
-    currentWeather("", lat, lon);
-    forecast5("", lat, lon);
- }
-
- /** error fallback is to show the last searched city. */
- function error() {
-    //fallback logic: if search history exists, get the data from last city
-    if (localStorage.getItem("lastCity")) {
-        currentWeather(localStorage.getItem("lastCity"));
-        forecast5(localStorage.getItem("lastCity"));
-    } 
-  }

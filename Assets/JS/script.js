@@ -4,6 +4,20 @@ var cityList = []; //saved search city
 var uvColorCodes = ['green', 'yellow', 'orange', 'red', 'purple'];
 var cityName, uvIndex;
 
+//-------------Helper functions--------------------//
+/** success for getting geolocation: show weather status for user's current city */
+function success(position) {
+    var lat  = position.coords.latitude;
+    var lon = position.coords.longitude;
+    
+    getSingleWeather("", lat, lon);
+ }
+
+ /** error: give user alert */
+ function error() {
+     alert("fail to retrive location! If you want to use your corrent location, please refresh page and click \"allow\" for pop-up question");
+  }
+
 //start of page  
 $( document ).ready(function() {  
     //get all the searched cities name stored in localStorage
@@ -18,6 +32,8 @@ $( document ).ready(function() {
     if (localStorage.getItem("lastCity")) {
         var lastCity = localStorage.getItem("lastCity");
         getSingleWeather(lastCity);      
+    } else {// using current location if user allow location service
+        navigator.geolocation.getCurrentPosition(success, error);
     }
 
     // handle user search in search bar

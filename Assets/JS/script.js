@@ -92,7 +92,7 @@ function getSingleWeather(city, lat, lon) {
     }
 
     var cityName = city; //use this to pass cityName from first Ajax call response to the callback in second ajax call
-
+    
     $.ajax({
         url: queryURL,
         method: "GET"
@@ -143,13 +143,24 @@ function displayCurrent(cityName, response) {
     h2.append(img);
     
     var tempF = (response.current.temp - 273.15) * 1.80 + 32; // Convert the temp to fahrenheit
-    var p1 = $("<p>").text("Temperature: " + tempF.toFixed(2));
-    var p2 = $("<p>").text("Humidity: " + response.current.humidity);
-    var p3 = $("<p>").text("Wind Speed: " + response.current.wind_speed);
+    var p1 = $("<p>").text("Temperature: " + tempF.toFixed(2) + " ℉");
+    var p2 = $("<p>").text("Humidity: " + response.current.humidity + "%");
+    var p3 = $("<p>").text("Wind Speed: " + response.current.wind_speed + " MPH");
     cardDiv.append(h2).append(p1).append(p2).append(p3);
 
     var uvIndex = response.current.uvi;
-    var p4 = $("<p>").text("UV Index: ");
+    //NOTE: OpenWeatherAPI has an issue with UV Index from oncall API, it appears that all the return value are 0, so I have to add this extra ajax call to get only UV Index
+    console.log(response.current);
+
+    var lat = response.lat;
+    var lon = response.lon;
+    queryURL = `https://api.openweathermap.org/data/2.5/uvi?lat=${lat}&lon=${lon}&appid=${APIKey}`;
+    $.ajax({
+        url: queryURL,
+        method: "GET"})
+    .done(function(result){
+        uvIndex = result.value;
+        var p4 = $("<p>").text("UV Index: ");
     var span = $('<span>').html(uvIndex).css({"color": "white", "padding": "4px"});
     p4.append(span);
     cardDiv.append(p4);
@@ -166,18 +177,22 @@ function displayCurrent(cityName, response) {
     } else {
         span.css("background-color", uvColorCodes[4]);
     }  
+    })
+    .fail(function(error) {
+        console.log(error)
+    });
 }
 
 /** Function to get 5 days forcast using response from Onecall API response*/
 function displayForcast(response) {
     $("#forcastHeader").text("5-Day Forcast");
     $("#forcast5").html("");
-    for (var i = 0; i < 5; i++) {
+    for (var i = 1; i <= 5; i++) {
         var date = new Date(response.daily[i].dt * 1000);
         var ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(date);
         var mo = new Intl.DateTimeFormat('en', { month: 'numeric' }).format(date);
         var da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(date);
-        date = ye + mo + da;
+        date = mo + '/'+ da + '/' + ye;
 
         var h5 = $("<h5>").text(date).attr("class", "card-title");
         var iconid = response.daily[i].weather[0].icon;
@@ -185,8 +200,8 @@ function displayForcast(response) {
         var img = $("<img>").attr("src", iconImg).attr("alt", response.daily[i].weather[0].main).css({"width":"40px", "height":"40px" }); //alter is the weather text
                     
         var tempF = (response.daily[i].temp.day - 273.15) * 1.80 + 32; // Convert the temp to fahrenheit
-        var p1 = $("<p>").text("Temp.: " + tempF.toFixed(2)).attr("class", "card-text");
-        var p2 = $("<p>").text("Humidity: " + response.daily[i].humidity).attr("class", "card-text");
+        var p1 = $("<p>").text("Temp.: " + tempF.toFixed(2) + " ℉").attr("class", "card-text");
+        var p2 = $("<p>").text("Humidity: " + response.daily[i].humidity + "%").attr("class", "card-text");
 
         var cardEl = $("<div>").attr("class", "card card-block bg-primary text-white border p-3 .rounded-sm");
         cardEl.append(h5).append(img).append(p1).append(p2);

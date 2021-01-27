@@ -39,6 +39,7 @@ $( document ).ready(function() {
     //add ebventlistener to search input field if user use enter key instead of clicking search button
     $('#cityInput').keypress(function(event) {
         if (event.which == 13) {//enter key keycode is 13
+            event.preventDefault();
             $("#searchBtn").click();
         }
         
@@ -50,7 +51,11 @@ $( document ).ready(function() {
             alert("please input a city name to search!");
         } else {
             getSingleWeather(cityName);
+            localStorage.setItem("lastCity", cityName);
+            cityList.push(cityName);
+            localStorage.setItem("cityList", JSON.stringify(cityList));
             $("#cityInput").val(""); //clear search input
+            refreshHistory();
          }     
     }); 
    
@@ -111,11 +116,7 @@ function getSingleWeather(city, lat, lon) {
     .done(function(response) {
         //display current weather for searched city if ajax call succeeds
         displayCurrent(cityName, response); 
-        localStorage.setItem("lastCity", cityName);
-        cityList.push(cityName);
-        localStorage.setItem("cityList", JSON.stringify(cityList));
         displayForcast(response);
-        refreshHistory();
     })
     .fail(function (error) {
         console.log(error);

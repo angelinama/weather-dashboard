@@ -1,4 +1,6 @@
 # weather-dashboard
+An app to get current weather and five day forecast when user inputs location.
+
 ![image](https://user-images.githubusercontent.com/22566791/106036064-ab8f1880-6089-11eb-8a13-41c78527970a.png)
 
 ### User Story

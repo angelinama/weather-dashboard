@@ -25,7 +25,12 @@ GIVEN a weather dashboard with form inputs
 
 - User can put in City name in Search bar to find a certain city's weather report
 
-### Deployed link
+### Deployed Link
 https://angelinama.github.io/weather-dashboard/
 
+### Technology Used
+Javascript with Jquery. OpenWeather API to retrieve weather data
+
+### Contact Info
+https://www.linkedin.com/in/bingqing-ma-4818a7132/
 
